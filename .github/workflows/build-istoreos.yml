@@ -51,10 +51,8 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     
-    #  核心修复 1/2：显式声明允许此任务创建或更新仓库的 Release 
     permissions:
       contents: write
-    #  ---------------------------------------------------- 
     
     strategy:
       matrix:
@@ -174,7 +172,8 @@ jobs:
 
     - name: 清理并复制固件到对应目录
       id: clean
-      if: ${{ steps.compile.outputs.status }} == 'success' && !cancelled()
+      #  修正后的 if 语法，去掉了包裹整行的 ${{ }} 
+      if: steps.compile.outputs.status == 'success' && !cancelled()
       run: |
         # Clean up server space
         cd openwrt/
@@ -209,10 +208,9 @@ jobs:
         echo "BUILD_DATE=${BUILD_DATE}" >> $GITHUB_ENV
 
     - name: 上传固件
-      #  核心修复 2/2：将 @main 替换为固定的 @v1 稳定版，防止由于上游直接更新导致的代码报错并消除了 Node20 警告 
       uses: ncipollo/release-action@v1
-      #  ***************************************************************************************** 
-      if: ${{ steps.clean.outputs.status }} == 'success' && !cancelled()
+      #  修正后的 if 语法，去掉了包裹整行的 ${{ }} 
+      if: steps.clean.outputs.status == 'success' && !cancelled()
       with:
         tag: ${{ env.RELEASE_TAG }}
         artifacts: openwrt/output/*
